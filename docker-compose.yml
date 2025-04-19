@@ -29,6 +29,52 @@ services:
     networks:
       - steel-network
 
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=bgg
+      - DB_POSTGRESDB_USER=boardgames
+      - DB_POSTGRESDB_PASSWORD=secret123
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-password}
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - TZ=Europe/Dublin
+      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    depends_on:
+      - api
+      - postgres
+    networks:
+      - steel-network
+
+  postgres:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: boardgames
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_DB: bgg
+    ports:
+      - "5436:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - steel-network
+
+volumes:
+  pg_data:
+
 networks:
   steel-network:
     driver: bridge
